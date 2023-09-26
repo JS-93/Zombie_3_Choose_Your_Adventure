@@ -10,7 +10,7 @@ session = Session()
 def output_slow(output):
     for char in output:
         print(char, end='', flush=True)
-        time.sleep(0.04)
+        time.sleep(0.03)
     print()
 
 def create_person(name: str, health: int, location_id: int):
@@ -37,5 +37,6 @@ def get_all_names():
     people = session.query(Person).all()
     info = [f'Name: {person.name} Health: {person.health}' for person in people]
     return output_slow('\n'.join(info))
+
 
 
