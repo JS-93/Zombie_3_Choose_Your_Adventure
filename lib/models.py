@@ -4,6 +4,7 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+
 class Person(Base):
     __tablename__ = 'people'
 
@@ -12,13 +13,13 @@ class Person(Base):
     health = Column(Integer())
     location_id = Column(Integer(), ForeignKey('locations.id'))
 
-
     location = relationship('Location', back_populates='people')
+
     def __repr__(self):
         return f'Person {self.id}:'\
-        + f'{self.name}'\
-        + f'{self.health}'\
-        + f'{self.location_id}'
+            + f'{self.name}'\
+            + f'{self.health}'\
+            + f'{self.location_id}'
 
 
 class Zombie(Base):
@@ -33,9 +34,10 @@ class Zombie(Base):
 
     def __repr__(self):
         return f'Location {self.id}:'\
-        + f'{self.name}'\
-        + f'{self.zombie.name}'\
-        + f'{self.person.name}'
+            + f'{self.name}'\
+            + f'{self.zombie.name}'\
+            + f'{self.person.name}'
+
 
 class Location(Base):
     __tablename__ = "locations"
@@ -47,4 +49,12 @@ class Location(Base):
     zombies = relationship('Zombie', back_populates='location')
 
 
+class Weapon(Base):
+    __tablename__ = "weapons"
 
+    id = Column(Integer(), primary_key=True)
+    name = Column(String())
+    damage = Column(Integer())
+    
+    people = relationship('Person', back_populates='weapon')
+    zombies = relationship('Zombie', back_populates='weapon')
