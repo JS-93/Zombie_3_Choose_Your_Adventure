@@ -10,11 +10,22 @@ session = Session()
 
 
 # display menu will show the output of all the logic in the cli
+
+def display_welcome():
+    output_slow(r"""
+W    W  AAAAA  L       K   K  I  N   N  GGGG       DDDD   EEEEE  AAAAA  DDDD
+W    W  A   A  L       K  K   I  NN  N  G          D   D  E      A   A  D   D 
+W W W   AAAAA  L       K K    I  N N N  G  GG      D   D  EEEE   AAAAA  D   D 
+W W W   A   A  L       K  K   I  N  NN  G   G      D   D  E      A   A  D   D 
+ W W    A   A  LLLLL   K   K  I  N   N  GGGG       DDDD   EEEEE  A   A  DDDD
+""")
+
+
 def display_menu(): 
     output_slow(
     '1. Show People\n'
     '2. See Zombie Info\n'
-    '3. Start the game')
+    '3. Add Person')
 
 
 
@@ -23,6 +34,7 @@ if __name__ == "__main__":
 
     output_slow("Hello there...Welcome to your next adventureee")
     while True:
+        display_welcome()
         display_menu()
         choice = input('Enter your choice: ')
         if choice == '1':
@@ -40,8 +52,9 @@ if __name__ == "__main__":
         elif choice == '2':
             output_slow("It looks like there is some info on where all the zombies might be.")
             get_number_of_zombies_per_location()
+
         elif choice == '3':
-            break
+            add_character()
         else:
             print('Invalid choice. Please enter a number between 1 and 3.')
             

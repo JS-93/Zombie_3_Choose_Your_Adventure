@@ -15,20 +15,28 @@ def output_slow(output):
     print()
 
 def get_random_health():
-        return random.randint(1,10)
+        return random.randint(1,20)
 
-def get_random_location():
-        return random.randint(1,4)
-# create a new person function
-def create_person(name: str, health: int, location_id: int):
-    try:
-        new_person = Person(name=name, health=health, location_id=location_id)
-        session.add(new_person)
-        session.commit()
-        return new_person
-    except:
-        session.rollback() 
-        raise Exception("Could not create person.")
+def create_person(person_name):  # Define a function to create a person instance
+    new_person = Person(  # person class and what we are returning 
+        name=person_name,
+        health=get_random_health(),
+        location_id = 1,
+    )
+    session.add(new_person)
+    session.commit()
+    return new_person
+
+def add_character():
+    print("Please enter character name (first and last): ")
+    person_name = input()
+    if person_name:
+        person_instance = create_person(person_name)  
+        print(f"Added {person_name} to list of characters.")
+    press_enter()
+
+def press_enter():
+    input("Press Enter to continue...")
 # deletes the person from the table
 def remove_person(person_id: int):
     try:
@@ -112,7 +120,6 @@ def create_location(name: str):
         session.rollback()
         raise Exception("Could not create a new location.")
 
-    
 
 
 
@@ -132,14 +139,29 @@ def display_first_scene(person):
              display_second_scene(person)
          else:
             break
+chuck_has_helped = False
 
 def display_second_scene(person):
+    global chuck_has_helped
     while True:
-        output_slow("1. Explore who's been yelling for help in the graveyard.\n2. Go around the graveyard toward the abandoned road.\n3. Head toward the town square where you can hear the distant song of 'Joy to the World' being played.")
-        choice = input("Enter your choice...")
+        output_slow("1. Explore who's been yelling for help in the graveyard.\n2. Go around the graveyard toward the abandoned gravel road.\n3. Head toward the town square where you can hear the distant song of 'Joy to the World' being played.")
+        choice = input("Enter your choice...")           
         if choice == "1":
-            output_slow("It's your friend Chuck, he says he came from the town square where he last saw a zombie.")
-            update_health(person)
+            if chuck_has_helped:
+                output_slow("Chuck is no longer here, he left a note saying he hopes the grocery store is as safe as everyone says it is.")
+            else:
+                output_slow(f"It's Chuck - a long time close friend, he says he came from the town square where he last saw a zombie.")
+                update_health(person)
+                chuck_has_helped = True
+        elif choice == "2":
+            output_slow(f"The gravel road leads to out of town, but {person.name} remembers a backway to the grocery store.")
+            choice = input("Do you go down the road?")
+            
+
+
+            
+                
+
 
 
 
