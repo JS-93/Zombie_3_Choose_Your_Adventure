@@ -73,6 +73,10 @@ def zombie_attack(person_id, location_id):
         if not person:
             print("No person found with the id.")
             return
+        if person.location_id != location_id:
+            print(f"{person.name} is not in the location with id {location_id}.")
+            return 
+        
         zombie_count = session.query(Zombie).filter_by(location_id = location_id).count()
         person_name = person.name
 
@@ -154,14 +158,39 @@ def display_second_scene(person):
                 update_health(person)
                 chuck_has_helped = True
         elif choice == "2":
-            output_slow(f"The gravel road leads to out of town, but {person.name} remembers a backway to the grocery store.")
-            choice = input("Do you go down the road?")
+            person_id = person
+            person = session.query(Person).filter_by(id = person_id).first()
+            abandoned_road_scene(person)
+        elif choice == "3":
+            pass 
+        # town square scene above
+
+def abandoned_road_scene(person):
+    output_slow(f"The gravel road leads to out of town, but {person.name} remembers a backway to the grocery store, but they have to cross the high school football field.")
+    while True:
+         output_slow("1. Keep going down the road to the high school.\n2. Turn back to the graveyard. ")
+         choice = input("Enter your choice...")
+         if choice == "1":
+            output_slow("The abandoned road seems quiet and is ripe")
+         elif choice == "2":
+             output_slow(f"{person.name} heads back to the graveyard. With the zombies closing in it looks like the only option is to...\n1. Head to the town square...")
+             choice = input("Enter the last choice...")
+             if choice == "1":
+                 pass
+            #  town square scene above
+             
+
+
+
+
+
+          
+        
             
 
 
             
                 
-
 
 
 
