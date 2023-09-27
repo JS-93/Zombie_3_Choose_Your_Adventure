@@ -45,5 +45,3 @@ class Location(Base):
 
     people = relationship('Person', back_populates='location')
     zombies = relationship('Zombie', back_populates='location')
-
-
