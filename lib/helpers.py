@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import *
+from termcolor import colored
 import time
 import random
 
@@ -34,12 +35,13 @@ def create_person(person_name):  # Define a function to create a person instance
     return new_person
 
 def add_character():
-    print("Please enter character name (first and last): ")
+    output_slow("Please enter character name: ")
     person_name = input()
     if person_name:
         create_person(person_name)  
-        print(f"Added {person_name} to list of characters.")
+        output_slow(f"Added {colored(person_name, 'green')} to list of characters.")
     press_enter()
+    
 
 def press_enter():
     input("Press Enter to continue...")
@@ -72,7 +74,7 @@ def update_person_location(person_id, new_location_id):
 # retrieves all the names of the people in a top to bottom string format
 def get_all_names():
     people = session.query(Person).all()
-    info = [f'Name: {person.name} | Health: {person.health}' for person in people]
+    info = [colored(f'\nName: {person.name} | Health: {person.health}\n', 'green') for person in people]
     return output_slow('\n'.join(info))
 
 def get_all_names_list():
@@ -93,7 +95,7 @@ def zombie_attack(person_id, location_id):
 
         if zombie_count >= person.health and zombie_count > 0:
             remove_person(person.id)
-            output_slow(f'\n{person_name} has been taken! Game over...\n')
+            output_slow(f'\n{colored(person_name, "red")} has been taken! Game over...\n')
             display_ending()
             return main_game()
             
@@ -101,17 +103,17 @@ def zombie_attack(person_id, location_id):
         elif zombie_count > 0 and person.health > zombie_count:
             person.health -= zombie_count
             if location_id == 3:
-                output_slow(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.')
+                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.', 'red'))
             elif location_id == 2:
-                output_slow(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.')
+                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.', 'red'))
             elif location_id == 7:
-                output_slow(f'{person_name} is injured and left with {person.health} health. {person.name} quickly closes the door of the gun room.')
+                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} quickly closes the door of the gun room.', 'red'))
             elif location_id == 5:
-                output_slow(f'{person_name} is injured and left with {person.health} health. {person.name} jumps over the fence safely with the zombies close behind.')
+                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} jumps over the fence safely with the zombies close behind.', 'red'))
             elif location_id == 4:
-                output_slow(f"{person_name} is injured and left with {person.health} health. {person.name} runs back into the ofice and closes the door.")
+                output_slow(colored(f"{person_name} is injured and left with {person.health} health. {person.name} runs back into the ofice and closes the door.", 'red'))
             elif location_id == 9:
-                output_slow(f"It looks like {person.name} has some visitors! Running at the speed of light {person.name} gets to the parking lot of the grocery store, but is left with {person.health} health.")
+                output_slow(colored(f"It looks like {person.name} has some visitors! Running at the speed of light {person.name} gets to the parking lot of the grocery store, but is left with {person.health} health.", 'red'))
         elif zombie_count == 0:
             output_slow(f'{person_name} is safe for now...No zombies in sight.')
 
@@ -119,6 +121,49 @@ def zombie_attack(person_id, location_id):
     except:
         session.rollback()
         raise Exception("Could not affect person's health with zombies.")
+def add_zombies():
+    zombies = []
+    try:
+        number_of_zombies = int(input("Enter the number of zombies you want to add: "))
+        for _ in range(number_of_zombies):
+            location_id = random.randint(2,7)
+            health = random.randint(1,20)
+            description = f"Zombie with health {health}"
+
+            zombie = (Zombie(description = description, health = health, location_id = location_id))
+            zombies.append(zombie)
+        session.add_all(zombies)
+        session.commit()
+        output_slow(f"Added {number_of_zombies} to the database. Good luck...")
+    except:
+        output_slow("Number of zombies must be a positive integer")
+def remove_zombies():
+    try:
+        number_of_zombies = int(input("Enter the number of zombies you want to remove: "))
+
+        if number_of_zombies < 0 or not int:
+            output_slow("Number of zombies must be positive integer.")
+            return
+        zombies = session.query(Zombie).all()
+
+        if len(zombies) < number_of_zombies:
+            output_slow(f'There are only {len(zombies)} zombies. You need to have at least 1 zombie!')
+            number_of_zombies = len(zombies)
+    
+        zombies_to_remove = random.sample(zombies, number_of_zombies)
+
+        try:
+            for zombie in zombies_to_remove:
+                session.delete(zombie)
+            session.commit()
+            output_slow(f"Removed {number_of_zombies} zombies from the database.")
+        except:
+            session.rollback()
+            raise Exception("Could not remove zombies from the database.")
+    except:
+        output_slow("Please enter a valid number of zombies.")
+
+
 def get_zombie_with_most_health():
     try:
         boss_zombie = session.query(Zombie).order_by(Zombie.health.desc()).first()
@@ -148,7 +193,7 @@ def update_health(person_id):
             print("No person found with the id.")
         person.health += 1
         session.commit()
-        output_slow(f"Chuck thanked {person.name} for being a close friend all these years. He tosses {person.name} a beer and {person.name} feels better. {person.name}'s health is now {person.health}")
+        output_slow(colored(f"Chuck thanked {person.name} for being a close friend all these years. He tosses {person.name} a beer and {person.name} feels better. {person.name}'s health is now {person.health}!", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health.")
@@ -159,7 +204,7 @@ def semi_update_health(person_id):
             print("No person found with the id.")
         person.health += 5
         session.commit()
-        output_slow(f"{person.name} finds a protein bar and energy drink! In a holding cell?! Crazy. {person.name}'s health is now {person.health}")
+        output_slow(colored(f"{person.name} finds a protein bar and energy drink! In a holding cell?! Crazy. {person.name}'s health is now {person.health}", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health.")
@@ -170,7 +215,7 @@ def super_update_health(person_id):
             print("No person found with the id.")
         person.health += 10
         session.commit()
-        output_slow(f"SCORE! It looks like someone is looking out for {person.name}. While searching the desk, much needed supplements were found-{person.name}'s health increased by 10!")
+        output_slow(colored(f"SCORE! It looks like someone is looking out for {person.name}. While searching the desk, much needed supplements were found-{person.name}'s health increased by 10!", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health.")
@@ -181,7 +226,7 @@ def dog_update_health(person_id):
             print("No person found with the id.")
         person.health += 50
         session.commit()
-        output_slow(f"Having a dog close by increases {person.name}'s health by 50!!! It is now {person.health}")
+        output_slow(colored(f"Having a dog close by increases {person.name}'s health by 50!!! It is now {person.health}!", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health")
@@ -191,7 +236,7 @@ def get_number_of_zombies_per_location():
     info = []
     for location in locations:
         zombie_count = session.query(Zombie).filter_by(location_id=location.id).count()
-        info.append(f'Location: {location.name} | Number of Zombies: {zombie_count}')
+        info.append(colored(f'\nLocation: {location.name} | Number of Zombies: {zombie_count}\n', 'red'))
     return output_slow('\n'.join(info))
 
 def create_location(name: str):
@@ -208,30 +253,30 @@ def display_menu():
     output_slow(
     '1. Show People\n'
     '2. Zombie Locations\n'
-    '3. Add Person')
+    '3. Add Person\n4. Add Zombies\n5. Remove Zombies')
 
 def display_welcome():
-    output_slow(r"""
+    output_slow(colored(r"""
 W    W  AAAAA  L       K   K  I  N   N  GGGG       DDDD   EEEEE  AAAAA  DDDD
 W    W  A   A  L       K  K   I  NN  N  G          D   D  E      A   A  D   D 
 W W W   AAAAA  L       K K    I  N N N  G  GG      D   D  EEEE   AAAAA  D   D 
 W W W   A   A  L       K  K   I  N  NN  G   G      D   D  E      A   A  D   D 
  W W    A   A  LLLLL   K   K  I  N   N  GGGG       DDDD   EEEEE  A   A  DDDD
-""")
+""", 'red'))
 
 def display_ending():
-    output_slow(r""" ▄· ▄▌      ▄• ▄▌    ▄▄▌        .▄▄ · ▄▄▄▄▄    ▄▄ 
+    output_slow(colored(r""" ▄· ▄▌      ▄• ▄▌    ▄▄▌        .▄▄ · ▄▄▄▄▄    ▄▄ 
 ▐█▪██▌▪     █▪██▌    ██•  ▪     ▐█ ▀. •██      ██▌
 ▐█▌▐█▪ ▄█▀▄ █▌▐█▌    ██▪   ▄█▀▄ ▄▀▀▀█▄ ▐█.▪    ▐█·
  ▐█▀·.▐█▌.▐▌▐█▄█▌    ▐█▌▐▌▐█▌.▐▌▐█▄▪▐█ ▐█▌·    .▀ 
-  ▀ •  ▀█▄▀▪ ▀▀▀     .▀▀▀  ▀█▄▀▪ ▀▀▀▀  ▀▀▀      ▀ """"\n\n")
+  ▀ •  ▀█▄▀▪ ▀▀▀     .▀▀▀  ▀█▄▀▪ ▀▀▀▀  ▀▀▀      ▀ """, 'red') + "\n\n")
     
 def display_congrats():
-    output_slow(r""" ▄· ▄▌      ▄• ▄▌    ▄▄▌ ▐ ▄▌       ▐ ▄     ▄▄ ▄▄ ▄▄ 
+    output_slow(colored(r""" ▄· ▄▌      ▄• ▄▌    ▄▄▌ ▐ ▄▌       ▐ ▄     ▄▄ ▄▄ ▄▄ 
 ▐█▪██▌▪     █▪██▌    ██· █▌▐█▪     •█▌▐█    ██▌██▌██▌
 ▐█▌▐█▪ ▄█▀▄ █▌▐█▌    ██▪▐█▐▐▌ ▄█▀▄ ▐█▐▐▌    ▐█·▐█·▐█·
  ▐█▀·.▐█▌.▐▌▐█▄█▌    ▐█▌██▐█▌▐█▌.▐▌██▐█▌    .▀ .▀ .▀ 
-  ▀ •  ▀█▄▀▪ ▀▀▀      ▀▀▀▀ ▀▪ ▀█▄▀▪▀▀ █▪     ▀  ▀  ▀  """"\n\nDo you want to play again?\n\n")
+  ▀ •  ▀█▄▀▪ ▀▀▀      ▀▀▀▀ ▀▪ ▀█▄▀▪▀▀ █▪     ▀  ▀  ▀  """, 'green') + "\n\nDo you want to play again?\n\n")
 
 def main_game():
     
@@ -244,12 +289,13 @@ def main_game():
            output_slow("Here are a list of people you can choose from:")
            get_all_names()
            person_choice = input('Choose a person from the list by typing in their name or press enter to cancel...')
-           if person_choice:
-               chosen_person = session.query(Person).filter_by(name=person_choice).first()
-               print((f'You have chosen {chosen_person.name} with {chosen_person.health} health!'))
-               output_slow(f"{chosen_person.name} wakes up confused in their bedroom knowing they need to get to the grocery store. {chosen_person.name} steps out to the street vigilant of any surrounding danger.")
-               display_first_scene(chosen_person)
-           else:
+           try:
+                if person_choice:
+                    chosen_person = session.query(Person).filter_by(name=person_choice).first()
+                    print((f'You have chosen {chosen_person.name} with {chosen_person.health} health!'))
+                    output_slow(f"{chosen_person.name} wakes up confused in their bedroom knowing they need to get to the grocery store. {chosen_person.name} steps out to the street vigilant of any surrounding danger.")
+                    display_first_scene(chosen_person)
+           except:
                output_slow("Invalid choice. Please choose a valid person name.")
                
             
@@ -259,8 +305,12 @@ def main_game():
 
         elif choice == '3':
             add_character()
+        elif choice == '4':
+            add_zombies()
+        elif choice == '5':
+            remove_zombies()
         else:
-            output_slow('Invalid choice. Please enter a number between 1 and 3.')
+            output_slow('Invalid choice. Please enter a number between 1 and 5.')
 
 
 
@@ -275,7 +325,7 @@ def display_first_scene(person):
          if choice == "1":
               output_slow("The park has a collapsed playground with a torn swing, it's eerily quiet....There seems to be nothing here.")
          elif choice == "2":
-              output_slow("The still silence of the camp is broken by sudden screaming...ZOMBIES!")
+              output_slow(colored("The still silence of the camp is broken by sudden screaming...ZOMBIES!", 'red'))
               update_person_location(person.id, 3)
               zombie_attack(person.id, 3)
          elif choice == "3":
@@ -342,7 +392,7 @@ def high_school_scene(person):
             grocery_store_parking_lot(person)
         elif choice == "2":
             remove_person(person.id)
-            output_slow("Maybe running isn't such a bad idea after all. Sorry, you didn't make it..")
+            output_slow(colored("Maybe running isn't such a bad idea after all. Sorry, you didn't make it..", 'red'))
             main_game()
         elif choice == "3":
             output_slow("The back of the drug store comes up out of the darkness with broken windows and empty pill bottles littered around the dumpster.")
@@ -362,7 +412,7 @@ def drug_store_scene(person):
             town_square(person)
         elif choice == "3":
             remove_person(person.id)
-            output_slow("Everyone is up for a little introspection now and then...maybe now isn't the best time?")
+            output_slow(colored("Everyone is up for a little introspection now and then...maybe now isn't the best time?", 'red'))
             main_game()
         else:
             output_slow('Invalid choice. Please enter a number between 1 and 3.')
@@ -382,7 +432,7 @@ def inside_drug_store(person):
                 super_update_health(person.id)
                 supplements_found = True
         elif choice == "2":
-            output_slow(f"Creeping through the store, {person.name} slips on an old dollar bill--the zombies of the store wake up!")
+            output_slow(colored(f"Creeping through the store, {person.name} slips on an old dollar bill--the zombies of the store wake up!", 'red'))
             update_person_location(person.id, 4)
             zombie_attack(person.id, 4)
             
@@ -421,7 +471,7 @@ def police_station(person):
                 semi_update_health(person.id)
                 eaten = True
         elif choice == "2":
-            output_slow("The gun room is full of zombies? Very counterintuitive.")
+            output_slow(colored("The gun room is full of zombies? Very counterintuitive.", 'red'))
             update_person_location(person.id, 7)
             zombie_attack(person.id, 7)
             
@@ -430,6 +480,8 @@ def police_station(person):
             choice = input("Enter the last choice...")
             if choice == "1":
                post_office(person)
+            else:
+                output_slow("Just press 1 and enter...")
         else:
             output_slow('Invalid choice. Please enter a number between 1 and 3.')
 
@@ -455,7 +507,7 @@ def post_office(person):
             drug_store_scene(person)
             
         elif choice == "4":
-            output_slow(f"Looks like there is no stopping these things through the power of reading, unfortunately {person.name} has been taken while studying the note!")
+            output_slow(colored(f"Looks like there is no stopping these things through the power of reading, unfortunately {person.name} has been taken while studying the note!", 'red'))
             remove_person(person.id)
             main_game()
         else:
@@ -468,16 +520,19 @@ def interact_with_dog(person):
         output_slow("1. Give the dog a pet and treat.\n2. Ignore the dog and continue on in the town square.\n3. Teach the dog how to shake.")
         choice = input("Enter your choice...")
         if choice == "1":
-            output_slow(f"The dog seems to be attached to {person.name} and follows them everywhere. Time to head back to the town square.")
-            dog_update_health(person.id)
-            dog_here = False
-            town_square(person)
+            if person.health > 30:
+                output_slow("The dog is thankful for the treat and wags its tail.")
+            else:
+                output_slow(f"The dog seems to be attached to {person.name} and follows them everywhere. Time to head back to the town square.")
+                dog_update_health(person.id)
+                dog_here = False
+                town_square(person)
         elif choice == "2":
             output_slow("The dog is probably too loud, it's time to go back to the town square.")
             dog_here = False
             town_square(person)
         elif choice == "3":
-            output_slow(f"No time for getting to know the pet on a time crunch, {person.name} has been taken! The dog gets away.")
+            output_slow(colored(f"No time for getting to know the pet on a time crunch, {person.name} has been taken! The dog gets away.", 'red'))
             remove_person(person.id)
             main_game()
         else:
@@ -488,22 +543,23 @@ def grocery_store_parking_lot(person):
     output_slow(f"Hiding behind a car and looking at the beautiful and welcoming lights of the grocery store, {person.name} hears the most ungodly growl behind them.")
     update_zombie_with_most_health()
     boss_zombie = get_zombie_with_most_health()
-    output_slow(f"A {boss_zombie.description} reveals itself and {person.name} is terriied. They better hope their health is more than {boss_zombie.health} or they are done for.")
+    output_slow(colored(f"A {boss_zombie.description} reveals itself and {person.name} is terriied. They better hope their health is more than {boss_zombie.health} or they are done for.", 'red'))
     while True:
         output_slow("1. Fight the beast.\n2. Get in a feedle position and hope it goes away. ")
         choice = input("Choose wisely...")
         if choice == "1":
             if person.health > boss_zombie.health:
-                output_slow(f"In a miraculous turn of events, {person.name} gets away from the foul beast and reaches the grocery store safely barricaded.")
+                output_slow(colored(f"In a miraculous turn of events, {person.name} gets away from the foul beast and reaches the grocery store safely barricaded.", 'green'))
                 display_congrats()
                 main_game()
             else:
                 remove_person(person.id)
-                output_slow("While the courage is admired, it won't go far with that thing. Try again next time!")
+                output_slow(colored("While the courage is admired, it won't go far with that thing. Try again next time!", 'red'))
+                display_ending()
                 main_game()
-                # win game tag
+                
         elif choice == "2":
-                output_slow("A FEEDLE position?! Do you think it's a bear?! No time to play possum shmossum. Try again next time!")
+                output_slow(colored("A FEEDLE position?! Do you think it's a bear?! No time to play possum shmossum. Try again next time!", 'red'))
                 remove_person(person.id)
                 main_game()
         else:
