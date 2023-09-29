@@ -1,9 +1,11 @@
+from colorama import Fore
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import *
 from termcolor import colored
 import time
 import random
+
 
 engine = create_engine('sqlite:///zombie.db')
 Session = sessionmaker(bind=engine) 
@@ -103,15 +105,15 @@ def zombie_attack(person_id, location_id):
         elif zombie_count > 0 and person.health > zombie_count:
             person.health -= zombie_count
             if location_id == 3:
-                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.', 'red'))
+                output_slow(colored(f'{person_name} is injured and left with {Fore.RED}{person.health}{Fore.RESET} health. {person.name} runs away back to the street.', 'red'))
             elif location_id == 2:
-                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} runs away back to the street.', 'red'))
+                output_slow(colored(f'{person_name} is injured and left with {Fore.RED}{person.health}{Fore.RESET} health. {person.name} runs away back to the street.', 'red'))
             elif location_id == 7:
-                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} quickly closes the door of the gun room.', 'red'))
+                output_slow(colored(f'{person_name} is injured and left with {Fore.RED}{person.health}{Fore.RESET} health. {person.name} quickly closes the door of the gun room.', 'red'))
             elif location_id == 5:
-                output_slow(colored(f'{person_name} is injured and left with {person.health} health. {person.name} jumps over the fence safely with the zombies close behind.', 'red'))
+                output_slow(colored(f'{person_name} is injured and left with {Fore.RED}{person.health}{Fore.RESET} health. {person.name} jumps over the fence safely with the zombies close behind.', 'red'))
             elif location_id == 4:
-                output_slow(colored(f"{person_name} is injured and left with {person.health} health. {person.name} runs back into the ofice and closes the door.", 'red'))
+                output_slow(colored(f"{person_name} is injured and left with {Fore.RED}{person.health}{Fore.RESET} health. {person.name} runs back into the ofice and closes the door.", 'red'))
             elif location_id == 9:
                 output_slow(colored(f"It looks like {person.name} has some visitors! Running at the speed of light {person.name} gets to the parking lot of the grocery store, but is left with {person.health} health.", 'red'))
         elif zombie_count == 0:
@@ -193,7 +195,7 @@ def update_health(person_id):
             print("No person found with the id.")
         person.health += 1
         session.commit()
-        output_slow(colored(f"Chuck thanked {person.name} for being a close friend all these years. He tosses {person.name} a beer and {person.name} feels better. {person.name}'s health is now {person.health}!", 'green'))
+        output_slow(colored(f"Chuck thanked {person.name} for being a close friend all these years. He tosses {person.name} a beer and {person.name} feels better. {person.name}'s health is now {Fore.RED}{person.health}{Fore.RESET}!", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health.")
@@ -204,7 +206,7 @@ def semi_update_health(person_id):
             print("No person found with the id.")
         person.health += 5
         session.commit()
-        output_slow(colored(f"{person.name} finds a protein bar and energy drink! In a holding cell?! Crazy. {person.name}'s health is now {person.health}", 'green'))
+        output_slow(f"{person.name} finds a protein bar and energy drink! In a holding cell?! Crazy. {person.name}'s health is now {Fore.RED}{person.health}{Fore.RESET}")
     except:
         session.rollback()
         raise Exception("Could not update health.")
@@ -226,7 +228,7 @@ def dog_update_health(person_id):
             print("No person found with the id.")
         person.health += 50
         session.commit()
-        output_slow(colored(f"Having a dog close by increases {person.name}'s health by 50!!! It is now {person.health}!", 'green'))
+        output_slow(colored(f"Having a dog close by increases {person.name}'s health by 50!!! It is now {Fore.RED}{person.health}{Fore.RESET}!", 'green'))
     except:
         session.rollback()
         raise Exception("Could not update health")
@@ -258,10 +260,10 @@ def display_menu():
 def display_welcome():
     output_slow(colored(r"""
 W    W  AAAAA  L       K   K  I  N   N  GGGG       DDDD   EEEEE  AAAAA  DDDD
-W    W  A   A  L       K  K   I  NN  N  G          D   D  E      A   A  D   D 
-W W W   AAAAA  L       K K    I  N N N  G  GG      D   D  EEEE   AAAAA  D   D 
+W    W  A   A  L       K  K   I  NN  N  G          D   D  E      A   A  D   D           
+W W W   AAAAA  L       K K    I  N N N  G  GG      D   D  EEEE   AAAAA  D   D   
 W W W   A   A  L       K  K   I  N  NN  G   G      D   D  E      A   A  D   D 
- W W    A   A  LLLLL   K   K  I  N   N  GGGG       DDDD   EEEEE  A   A  DDDD
+ W W    A   A  LLLLL   K   K  I  N   N  GGGG       DDDD   EEEEE  A   A  DDDD            
 """, 'red'))
 
 def display_ending():
@@ -292,12 +294,11 @@ def main_game():
            try:
                 if person_choice:
                     chosen_person = session.query(Person).filter_by(name=person_choice).first()
-                    print((f'You have chosen {chosen_person.name} with {chosen_person.health} health!'))
-                    output_slow(f"{chosen_person.name} wakes up confused in their bedroom knowing they need to get to the grocery store. {chosen_person.name} steps out to the street vigilant of any surrounding danger.")
+                    print((f'You have chosen {chosen_person.name} with {Fore.RED}{chosen_person.health}{Fore.RESET} health!'))
+                    output_slow(f"({chosen_person.name} wakes up confused in their bedroom knowing they need to get to the grocery store. {chosen_person.name} steps out to the street vigilant of any surrounding danger.")
                     display_first_scene(chosen_person)
            except:
                output_slow("Invalid choice. Please choose a valid person name.")
-               
             
         elif choice == '2':
             output_slow("It looks like there is some info on where all the zombies might be.")
@@ -543,7 +544,7 @@ def grocery_store_parking_lot(person):
     output_slow(f"Hiding behind a car and looking at the beautiful and welcoming lights of the grocery store, {person.name} hears the most ungodly growl behind them.")
     update_zombie_with_most_health()
     boss_zombie = get_zombie_with_most_health()
-    output_slow(colored(f"A {boss_zombie.description} reveals itself and {person.name} is terriied. They better hope their health is more than {boss_zombie.health} or they are done for.", 'red'))
+    output_slow(colored(f"A {boss_zombie.description} reveals itself and {person.name} is terriied. They better hope their health is more than {Fore.YELLOW}{boss_zombie.health}{Fore.RESET} or they are done for.", 'red'))
     while True:
         output_slow("1. Fight the beast.\n2. Get in a feedle position and hope it goes away. ")
         choice = input("Choose wisely...")
