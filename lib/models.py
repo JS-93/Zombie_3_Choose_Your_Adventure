@@ -32,10 +32,10 @@ class Zombie(Base):
     location = relationship('Location', back_populates='zombies')
 
     def __repr__(self):
-        return f'Location {self.id}:'\
-        + f'{self.name}'\
-        + f'{self.zombie.name}'\
-        + f'{self.person.name}'
+        return f'Zombie {self.id}:'\
+        + f'{self.description}'\
+        + f'{self.health}'\
+        + f'{self.location_id}'
 
 class Location(Base):
     __tablename__ = "locations"
@@ -45,6 +45,15 @@ class Location(Base):
 
     people = relationship('Person', back_populates='location')
     zombies = relationship('Zombie', back_populates='location')
+
+    def __repr__(self):
+        return f'Location {self.id}:'\
+        + f'{self.name}'\
+        + f'{self.people}'\
+        + f'{self.zombies}'
+
+
+
 
 
 
